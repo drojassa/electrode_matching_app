@@ -74,6 +74,28 @@ def Score(R,Q,l):
     S=(T*T1*T2)**(1/3)+(1/3)*(T+T1+T2)
     return S
 
+if "filters_initialized" not in st.session_state:
+    st.session_state["price_val"] = 150.0
+    st.session_state["co2_val"] = 250.0
+    st.session_state["energy_val"] = 3000.0
+    st.session_state["water_val"] = 800.0
+    st.session_state["stab_val"] = 0.0250
+    st.session_state["dv_val"] = 0.40
+    st.session_state["mis_val"] = 0.20
+    st.session_state["filters_initialized"] = True
+
+def reset_to_none():
+    for key in ["price_val", "co2_val", "energy_val", "water_val", "stab_val", "dv_val", "mis_val"]:
+        st.session_state[key] = None
+def reset_to_default():
+    st.session_state["price_val"] = 150.0
+    st.session_state["co2_val"] = 250.0
+    st.session_state["energy_val"] = 3000.0
+    st.session_state["water_val"] = 800.0
+    st.session_state["stab_val"] = 0.0250
+    st.session_state["dv_val"] = 0.40
+    st.session_state["mis_val"] = 0.20
+
 l=0.05
 
 # --- DATA LOADING & PREPARATION ---
@@ -179,52 +201,65 @@ countries_dict = df_sustainable.set_index('Elements')['countries_list'].to_dict(
 hhi_dict = df_sustainable.set_index('Elements')['HHI'].to_dict()
 
 with st.expander("🔍 Filters", expanded=False):
+    col_space, col_btn_def, col_btn_reset = st.columns([3, 1, 1])
+    
+    with col_btn_def:
+        if st.button("⚙️ Default", width='stretch', help="Restore recomended values"):
+            reset_to_default()
+            st.rerun()
+
+    with col_btn_reset:
+        if st.button("🔓 Remove Filters", width='stretch', help="Remove all filters (show everything)"):
+            reset_to_none()
+            st.rerun()
+
     col1, col2 = st.columns(2)
 
     with col1:
+
         price_filter = st.number_input(
             "Max Price (USD)",
-            min_value=0.0, value=150.0, step=1000.0, format="%.2f",
+            min_value=0.0, step=100.0, format="%.2f", key="price_val",
             help="Maximum allowed monetary cost of battery materials (anode + cathode)."
         )
 
         CO2_filter = st.number_input(
             "Max CO₂ (kg)",
-            min_value=0.0, value=250.0, step=100.0, format="%.2f",
+            min_value=0.0, step=10.0, format="%.2f", key="co2_val",
             help="Maximum allowed kilograms of CO₂ emitted during the production of battery materials (anode + cathode)."
         )
 
         energy_filter = st.number_input(
             "Max Energy (MJ)",
-            min_value=0.0, value=3000.0, step=100.0, format="%.2f",
+            min_value=0.0, step=100.0, format="%.2f", key="energy_val",
             help="Maximum allowed total energy consumed to produce the battery materials (anode + cathode)."
         )
 
         water_filter = st.number_input(
             "Max Water (L)",
-            min_value=0.0, value=800.0, step=100.0, format="%.2f",
+            min_value=0.0, step=50.0, format="%.2f", key="water_val",
             help="Maximum allowed total water consumption required to obtain the battery materials (anode + cathode)."
         )
 
     with col2:
         stab_filter = st.number_input(
             "Max Stability (eV/atom)",
-            min_value=0.0, value=0.025, step=10.0, format="%.4f",
+            min_value=0.0, step=0.001, format="%.4f", key="stab_val",
             help="Maximum allowed formation energy of battery materials; lower values indicate higher stability."
         )
 
         dv_filter = st.number_input(
             "Max Delta Volume",
-            min_value=0.0, value=0.4, step=0.01, format="%.2f",
+            min_value=0.0, step=0.01, format="%.2f", key="dv_val",
             help="Maximum allowed volume change of cathode during operation."
         )
 
         mis_filter = st.number_input(
             "Max Volume Mismatch",
-            min_value=0.0, value=0.2, step=0.01, format="%.2f",
+            min_value=0.0, step=0.01, format="%.2f", key="mis_val",
             help="Maximum allowed difference in volume change between anode and cathode materials."
         )
-
+        
 # Filter by Ion
 df_selected_ion = df_batteries[df_batteries["working_ion"] == working_ion].copy()
 if not selected_anode_elements:
@@ -541,7 +576,7 @@ else:
                             df_gov_filtered.melt(id_vars="Country", value_vars=["Political Stability", "Regulatory Quality", "Rule of law", "Control of corruption"], var_name="Category", value_name="Index"),
                             x="Index", y="Country", color="Category", orientation="h", barmode="group",
                             title="🏛️ Governance Indices",
-                            height=len(countries_list) * 65
+                            #height=len(countries_list) * 65
                         )
                         fig_gov.update_layout(
                             yaxis_tickfont=dict(size=16),
