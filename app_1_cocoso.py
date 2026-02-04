@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="Battery Sustainability Tool",
+    page_title="Tinderry Battery Tool",
     page_icon="🔋",
     layout="wide"
 )
@@ -190,7 +190,7 @@ w_dur=w_durability/total_finals_weight
 w_price=w_total_price/total_finals_weight
 
 # --- MAIN BODY ---
-st.title("🔋 Battery Sustainability Analyzer")
+st.title("🔋 Tinderry: the electrode matching app")
 
 # Prepare sustainability dictionaries
 price_dict = df_sustainable.set_index('Elements')['Price (USD/kg)'].to_dict()

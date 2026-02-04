@@ -244,7 +244,7 @@ for idx in anode_indices:
     dfs_by_anode[idx] = df_sorted
 
 
-df_anode_case = dfs_by_anode[2]
+df_anode_case = dfs_by_anode[2].head(50)
 print(df_anode_case.head(10))
 print(df_anode_case.columns.tolist())
 
@@ -285,19 +285,27 @@ categories = [
     'norm_water',
     'norm_price'
 ]
+label_map = {
+    'norm_stab': 'Stability',
+    'norm_mismatch': 'Mismatch',
+    'norm_vol': 'Delta volume',
+    'norm_CO2': 'CO₂ footprint',
+    'norm_energy': 'Energy fooprint',
+    'norm_water': 'Water usage',
+    'norm_price': 'Price'
+}
 
 plt.figure(figsize=(12, 5))
 
 # Dibujar líneas sin puntos
 for cat in categories:
-    plt.plot(df_plot['Rank'], df_plot[cat], alpha=0.8, label=cat)
+    plt.plot(df_plot['Rank'], df_plot[cat], alpha=0.8, label=label_map[cat])
 
 plt.xlabel('Battery Rank')
 plt.ylabel('Normalized Value')
 plt.ylim(0, 1)
 plt.title('Normalized properties per battery')
 
-# Mostrar solo cada 5 baterías en el eje x
 ranks = df_plot['Rank']
 plt.xticks(ranks[::11])
 plt.grid(alpha=0.3)
