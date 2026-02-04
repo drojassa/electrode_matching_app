@@ -497,96 +497,6 @@ else:
                     "Calculations for this variables are shown as zero:\n"
                     f"{items_text}")
 
-                # --- COUNTRIES BREAKDOWN ---
-
-                # Compute countries first (outside expander so countries_list is always available)
-                all_countries = set()
-                countries_pills = {}
-                for el in mass_dict:
-                    raw = countries_dict.get(el)
-                    cleaned = raw.replace("nan", "None")
-                    parsed = ast.literal_eval(cleaned)
-                    countries = [c.strip() for c in parsed if c is not None and c.strip()]
-                    all_countries.update(countries)
-                    countries_pills[el] = countries
-
-                countries_list = sorted(all_countries)
-
-                with st.expander("🌍 Countries information", expanded=True):
-                    col0, col1 = st.columns([1, 1.5])
-                    with col0:
-                        
-                        for el, countries in countries_pills.items():
-                            if countries:
-                                pills = " ".join(
-                                    f'<span style="background-color:#4a3f5c; color:#ffffff; padding:5px 14px; border-radius:12px; font-size:16px; margin-right:6px;">{c}</span>'
-                                    for c in countries
-                                )
-                                st.markdown(f'''
-                                    <div style="margin-top:15px; margin-bottom:5px;">
-                                        <span style="font-size:20px; font-weight:bold;">{el}</span>
-                                    </div>
-                                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                                        {pills}
-                                    </div>
-                                ''', unsafe_allow_html=True)
-                        st.divider()        
-                        df_hhi_plot = df_breakdown.reset_index()
-                        df_hhi_plot = df_hhi_plot[df_hhi_plot["HHI"].notna()]
-
-                        if not df_hhi_plot.empty:
-                            fig_hhi = px.bar(
-                                df_hhi_plot,
-                                x="HHI",
-                                y="Element",
-                                orientation="h",
-                                title="Market Concentration (HHI)",
-                                color="HHI",
-                                color_continuous_scale=["#2ecc71", "#f1c40f", "#e74c3c"]
-                            )
-                            #Unconcentrated (< 0.15)
-                            fig_hhi.add_vrect(x0=0, x1=0.15, fillcolor="green", opacity=0.1, line_width=0, annotation_text="Low", annotation_position="top left")
-                            #Moderately Concentrated (0.15 - 0.25)
-                            fig_hhi.add_vrect(x0=0.15, x1=0.25, fillcolor="yellow", opacity=0.1, line_width=0, annotation_text="Mid", annotation_position="top left")
-                            # Highly Concentrated (> 0.25)
-                            max_hhi = max(df_hhi_plot["HHI"].max(), 0.4) 
-                            fig_hhi.add_vrect(x0=0.25, x1=max_hhi, fillcolor="red", opacity=0.1, line_width=0, annotation_text="High", annotation_position="top left")
-                            # --- ---
-                            fig_hhi.add_vline(x=0.15, line_dash="dash", line_color="gray", opacity=0.5)
-                            fig_hhi.add_vline(x=0.25, line_dash="dash", line_color="gray", opacity=0.5)
-
-                            fig_hhi.update_layout(
-                                height=350, 
-                                margin=dict(l=10, r=10, t=50, b=10),
-                                showlegend=False,
-                                coloraxis_showscale=False,
-                                yaxis={'categoryorder':'total ascending'},
-                                yaxis_title=None,
-                                xaxis_title="HHI Score",
-                                xaxis=dict(range=[0, max_hhi + 0.05]) 
-                            )
-                            
-                            st.plotly_chart(fig_hhi, width='stretch')
-                        
-
-                    with col1:
-                        df_gov_filtered = df_gov[df_gov["Country"].isin(countries_list)]
-
-                        fig_gov = px.bar(
-                            df_gov_filtered.melt(id_vars="Country", value_vars=["Political Stability", "Regulatory Quality", "Rule of law", "Control of corruption"], var_name="Category", value_name="Index"),
-                            x="Index", y="Country", color="Category", orientation="h", barmode="group",
-                            title="🏛️ Governance Indices",
-                            #height=len(countries_list) * 65
-                        )
-                        fig_gov.update_layout(
-                            yaxis_tickfont=dict(size=16),
-                            xaxis_tickfont=dict(size=16),
-                            legend_font=dict(size=14),
-                            title_font=dict(size=18),
-                            title_x=0.2,
-                            yaxis_title=None
-                        )
-                        st.plotly_chart(fig_gov,width='stretch')
 
 
                 st.markdown("### 📊 Detailed Breakdown")
@@ -692,6 +602,97 @@ else:
                         hoverlabel=dict(font_size=20)
                     )
                     st.plotly_chart(fig_water, width='stretch')
+                                # --- COUNTRIES BREAKDOWN ---
+
+                # Compute countries first
+                all_countries = set()
+                countries_pills = {}
+                for el in mass_dict:
+                    raw = countries_dict.get(el)
+                    cleaned = raw.replace("nan", "None")
+                    parsed = ast.literal_eval(cleaned)
+                    countries = [c.strip() for c in parsed if c is not None and c.strip()]
+                    all_countries.update(countries)
+                    countries_pills[el] = countries
+
+                countries_list = sorted(all_countries)
+
+                with st.expander("🌍 Countries information", expanded=True):
+                    col0, col1 = st.columns([1, 1.5])
+                    with col0:
+                        
+                        for el, countries in countries_pills.items():
+                            if countries:
+                                pills = " ".join(
+                                    f'<span style="background-color:#4a3f5c; color:#ffffff; padding:5px 14px; border-radius:12px; font-size:16px; margin-right:6px;">{c}</span>'
+                                    for c in countries
+                                )
+                                st.markdown(f'''
+                                    <div style="margin-top:15px; margin-bottom:5px;">
+                                        <span style="font-size:20px; font-weight:bold;">{el}</span>
+                                    </div>
+                                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                        {pills}
+                                    </div>
+                                ''', unsafe_allow_html=True)
+                        st.divider()        
+                        df_hhi_plot = df_breakdown.reset_index()
+                        df_hhi_plot = df_hhi_plot[df_hhi_plot["HHI"].notna()]
+
+                        if not df_hhi_plot.empty:
+                            fig_hhi = px.bar(
+                                df_hhi_plot,
+                                x="HHI",
+                                y="Element",
+                                orientation="h",
+                                title="Market Concentration (HHI)",
+                                color="HHI",
+                                color_continuous_scale=["#2ecc71", "#f1c40f", "#e74c3c"]
+                            )
+                            #Unconcentrated (< 0.15)
+                            fig_hhi.add_vrect(x0=0, x1=0.15, fillcolor="green", opacity=0.1, line_width=0, annotation_text="Low", annotation_position="top left")
+                            #Moderately Concentrated (0.15 - 0.25)
+                            fig_hhi.add_vrect(x0=0.15, x1=0.25, fillcolor="yellow", opacity=0.1, line_width=0, annotation_text="Mid", annotation_position="top left")
+                            # Highly Concentrated (> 0.25)
+                            max_hhi = max(df_hhi_plot["HHI"].max(), 0.4) 
+                            fig_hhi.add_vrect(x0=0.25, x1=max_hhi, fillcolor="red", opacity=0.1, line_width=0, annotation_text="High", annotation_position="top left")
+                            # --- ---
+                            fig_hhi.add_vline(x=0.15, line_dash="dash", line_color="gray", opacity=0.5)
+                            fig_hhi.add_vline(x=0.25, line_dash="dash", line_color="gray", opacity=0.5)
+
+                            fig_hhi.update_layout(
+                                height=350, 
+                                margin=dict(l=10, r=10, t=50, b=10),
+                                showlegend=False,
+                                coloraxis_showscale=False,
+                                yaxis={'categoryorder':'total ascending'},
+                                yaxis_title=None,
+                                xaxis_title="HHI Score",
+                                xaxis=dict(range=[0, max_hhi + 0.05]) 
+                            )
+                            
+                            st.plotly_chart(fig_hhi, width='stretch')
+                        
+
+                    with col1:
+                        df_gov_filtered = df_gov[df_gov["Country"].isin(countries_list)]
+
+                        fig_gov = px.bar(
+                            df_gov_filtered.melt(id_vars="Country", value_vars=["Political Stability", "Regulatory Quality", "Rule of law", "Control of corruption"], var_name="Category", value_name="Index"),
+                            x="Index", y="Country", color="Category", orientation="h", barmode="group",
+                            title="🏛️ Governance Indices",
+                            #height=len(countries_list) * 65
+                        )
+                        fig_gov.update_layout(
+                            yaxis_tickfont=dict(size=16),
+                            xaxis_tickfont=dict(size=16),
+                            legend_font=dict(size=14),
+                            title_font=dict(size=18),
+                            title_x=0.2,
+                            yaxis_title=None
+                        )
+                        st.plotly_chart(fig_gov,width='stretch')
+
 
 st.markdown("---")
 st.caption("Developed by GREENANO Alumni for Battery Sustainability Research.")
