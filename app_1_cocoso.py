@@ -141,7 +141,7 @@ with st.sidebar:
         )
 
         w_energy_required = st.slider(
-            "Energy Req. Importance", 0, 5, 3,
+            "Energy Footprint. Importance", 0, 5, 3,
             help="Influence of the total energy consumed to produce the battery materials (anode + cathode)."
         )
 
@@ -596,7 +596,7 @@ else:
                 with col0:
                     radar_df = pd.DataFrame(dict(
                         r=[row_data["norm_price"], row_data["norm_CO2"],row_data["norm_energy"],row_data["norm_water"],row_data["norm_stab"],row_data["norm_vol"],row_data["norm_mismatch"]],
-                        theta=['Cost','CO2', 'Req. Energy','Water Usage','Stability','Δ Volume','mismatch']))
+                        theta=['Cost','CO2', 'Energy footprint','Water Usage','Stability','Δ Volume','mismatch']))
                     
                     fig_radar = px.line_polar(radar_df, r='r', theta='theta', line_close=True,title=f"🌐 Overall Performance Profile<br><sup>By score - higher is better</sup>")
                     fig_radar.update_traces(fill='toself')

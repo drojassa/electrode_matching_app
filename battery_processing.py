@@ -4,7 +4,7 @@ from pymatgen.core import Composition
 from pymatgen.core import Element
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from pandas.plotting import parallel_coordinates
 import numpy as np
 
 #Function to obtain the mass of each element per battery (anode+cathode)
@@ -239,14 +239,73 @@ for idx in anode_indices:
     df_tmp["S"]= Score(df_tmp["R"],df_tmp["Q"],l)
 
     df_sorted = df_tmp.sort_values(by="S", ascending=False).reset_index(drop=True)
+    df_sorted["Rank"]=df_sorted.index +1
 
     dfs_by_anode[idx] = df_sorted
 
 
 df_anode_case = dfs_by_anode[2]
 print(df_anode_case.head(10))
+print(df_anode_case.columns.tolist())
 
+#Plot hilos
+cols = [
+    'Rank',
+    'norm_stab',
+    'norm_mismatch',
+    'norm_vol',
+    'norm_CO2',
+    'norm_energy',
+    'norm_water',
+    'norm_price'
+]
 
+df_plot = df_anode_case[cols].copy()
+plt.figure(figsize=(11, 5))
+
+parallel_coordinates(
+    df_plot,
+    class_column='Rank',
+    alpha=0.25
+)
+
+plt.ylim(0, 1)
+plt.ylabel('normalized value')
+plt.xticks(rotation=30)
+plt.legend([], [], frameon=False) 
+
+#Otro plot hilos 
+
+categories = [
+    'norm_stab',
+    'norm_mismatch',
+    'norm_vol',
+    'norm_CO2',
+    'norm_energy',
+    'norm_water',
+    'norm_price'
+]
+
+plt.figure(figsize=(12, 5))
+
+# Dibujar líneas sin puntos
+for cat in categories:
+    plt.plot(df_plot['Rank'], df_plot[cat], alpha=0.8, label=cat)
+
+plt.xlabel('Battery Rank')
+plt.ylabel('Normalized Value')
+plt.ylim(0, 1)
+plt.title('Normalized properties per battery')
+
+# Mostrar solo cada 5 baterías en el eje x
+ranks = df_plot['Rank']
+plt.xticks(ranks[::11])
+plt.grid(alpha=0.3)
+plt.legend(title='Property', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+
+#Plot radar
 df_bat = df_anode_case.head(5)
 labels = df_bat["formula_discharge"].tolist()
 categories = ["norm_price","norm_CO2","norm_energy","norm_water","norm_stab","norm_vol","norm_mismatch"]
